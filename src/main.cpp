@@ -457,9 +457,9 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	});
-	std::thread input_consumer_thread(foo);
+	std::thread input_consumer_thread;
 	if(invoice){
-		std::thread input_consumer_thread([&]() {
+		input_consumer_thread = std::thread ([&]() {
 			// consumes the data that the input audio thread receives and sends it
 			// through mumble client
 			// this will continuously read from the input data circular buffer
