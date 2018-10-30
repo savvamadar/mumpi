@@ -2,6 +2,7 @@
 #include <algorithm>
 #include "gtest/gtest.h"
 #include "RingBuffer.hpp"
+#include <numeric>
 
 
 static const int NUM_ELEMENTS = 10;
