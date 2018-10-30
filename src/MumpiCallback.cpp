@@ -1,5 +1,6 @@
 #include "MumpiCallback.hpp"
 
+bool outputSound = true;
 
 MumpiCallback::MumpiCallback(std::shared_ptr<RingBuffer<int16_t>> out_buf) :
         _out_buf(out_buf) {

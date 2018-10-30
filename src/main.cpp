@@ -117,6 +117,7 @@ static int paOutputCallback(const void *inputBuffer,
 	// if we dont have enough samples in our ring buffer, we have to still supply 0s to the output_buffer
 	const size_t requested_samples = (framesPerBuffer * NUM_CHANNELS);
 	const size_t available_samples = pa_data->out_buf->getRemaining();
+	printf("test?");
 	logger.info("requested_samples: %d", requested_samples);
 	logger.info("available_samples: %d", available_samples);
 	if(requested_samples > available_samples) {
@@ -129,10 +130,6 @@ static int paOutputCallback(const void *inputBuffer,
 	}
 
 	return result;
-}
-
-void foo(){
-	// yeet
 }
 
 /**
@@ -176,8 +173,12 @@ void help() {
 	printf("                          voice hold interval in seconds. This \n");
 	printf("                          is how long to keep transmitting after \n");
 	printf("                          silence. Default: 0.050s \n");
+	printf("-o, --outvoiceoff		  disables output on client.\n");
+	printf("-i, --invoiceoff		  disables input on client.\n");
 	exit(1);
 }
+
+bool invoice = true;
 
 /**
  * main function
@@ -193,7 +194,6 @@ void help() {
 int main(int argc, char *argv[]) {
 	bool verbose = false;
 	bool outvoice = true;
-	bool invoice = true;
 	std::string server;
 	std::string username;
 	std::string password;
@@ -459,6 +459,7 @@ int main(int argc, char *argv[]) {
 	});
 	std::thread input_consumer_thread;
 	if(invoice){
+		printf("started input thread");
 		input_consumer_thread = std::thread ([&]() {
 			// consumes the data that the input audio thread receives and sends it
 			// through mumble client
