@@ -198,7 +198,7 @@ int main(int argc, char *argv[]) {
 	std::string username;
 	std::string password;
 	int next_option;
-	const char* const short_options = "hvs:u:p:d:r:x:z:o:i";
+	const char* const short_options = "hvs:u:p:d:r:x:z:o:i:";
 	const struct option long_options[] =
 	{
 		{ "help", no_argument, NULL, 'h' },
