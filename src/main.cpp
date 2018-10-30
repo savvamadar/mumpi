@@ -197,8 +197,8 @@ int main(int argc, char *argv[]) {
 	const struct option long_options[] =
 	{
 		{ "help", no_argument, NULL, 'h' },
-		{ "outvoice", required_argument, NULL, 'o' },
-		{ "invoice", required_argument, NULL, 'i' },
+		{ "outvoiceoff", required_argument, NULL, 'o' },
+		{ "invoiceoff", required_argument, NULL, 'i' },
 		{ "verbose", required_argument, NULL, 'v' },
 		{ "server", required_argument, NULL, 's' },
 		{ "username", required_argument, NULL, 'u' },
@@ -232,11 +232,11 @@ int main(int argc, char *argv[]) {
 			help();
 			break;
 
-		case 'o':		// -o or -outvoice
+		case 'o':		// -o or -outvoiceoff
 			outvoice = false;
 			break;
 
-		case 'i':		// -i or -invoice
+		case 'i':		// -i or -invoiceoff
 			invoice = false;
 			break;
 
