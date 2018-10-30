@@ -12,6 +12,7 @@
 #include <mumlib/Transport.hpp>
 #include "MumpiCallback.hpp"
 #include "RingBuffer.hpp"
+#include <numeric>
 
 int sample_rate = 48000;
 const int NUM_CHANNELS = 1;
