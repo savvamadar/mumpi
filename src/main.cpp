@@ -187,6 +187,8 @@ void help() {
  */
 int main(int argc, char *argv[]) {
 	bool verbose = false;
+	bool outvoice = true;
+	bool invoice = true;
 	std::string server;
 	std::string username;
 	std::string password;
@@ -195,6 +197,8 @@ int main(int argc, char *argv[]) {
 	const struct option long_options[] =
 	{
 		{ "help", no_argument, NULL, 'h' },
+		{ "outvoice", required_argument, NULL, 'o' },
+		{ "invoice", required_argument, NULL, 'i' },
 		{ "verbose", required_argument, NULL, 'v' },
 		{ "server", required_argument, NULL, 's' },
 		{ "username", required_argument, NULL, 'u' },
@@ -202,7 +206,7 @@ int main(int argc, char *argv[]) {
 		{ "delay", required_argument, NULL, 'd'},
 		{ "sample-rate", required_argument, NULL, 'r'},
 		{ "vox-threshold", required_argument, NULL, 'x'},
-		{ "voice-hold", required_argument, NULL, 'i'},
+		{ "voice-hold", required_argument, NULL, 'z'},
 		{ NULL, 0, NULL, 0 }
 	};
 	double output_delay = -1.0;
@@ -226,6 +230,14 @@ int main(int argc, char *argv[]) {
 
 		case 'h':      // -h or --help
 			help();
+			break;
+
+		case 'o':		// -o or -outvoice
+			outvoice = false;
+			break;
+
+		case 'i':		// -i or -invoice
+			invoice = false;
 			break;
 
 		case 'v':      // -v or --verbose
@@ -256,7 +268,7 @@ int main(int argc, char *argv[]) {
 			vox_threshold = std::stod(optarg);
 			break;
 
-		case 'i':
+		case 'z':
 			voice_hold_interval = std::chrono::duration<double>(std::stod(optarg));
 			break;
 
@@ -320,76 +332,99 @@ int main(int argc, char *argv[]) {
 	data.rec_buf = std::make_shared<RingBuffer<int16_t>>(MAX_SAMPLES);
 	data.out_buf = std::make_shared<RingBuffer<int16_t>>(MAX_SAMPLES);
 
-	inputParameters.device = Pa_GetDefaultInputDevice();
-	if (inputParameters.device == paNoDevice) {
-		logger.error("No default input device.");
-		exit(-1);
-	}
-	inputParameters.channelCount = NUM_CHANNELS;
-	inputParameters.sampleFormat = paInt16;
-	inputParameters.suggestedLatency = Pa_GetDeviceInfo(inputParameters.device)->defaultLowInputLatency;
-	inputParameters.hostApiSpecificStreamInfo = NULL;
+	if(invoice){
+		inputParameters.device = Pa_GetDefaultInputDevice();
+		if (inputParameters.device == paNoDevice) {
+			printf("No default input device.");
+			logger.error("No default input device.");
+			//exit(-1);
+			invoice = false;
+		}
+		if(invoice){
+			inputParameters.channelCount = NUM_CHANNELS;
+			inputParameters.sampleFormat = paInt16;
+			inputParameters.suggestedLatency = Pa_GetDeviceInfo(inputParameters.device)->defaultLowInputLatency;
+			inputParameters.hostApiSpecificStreamInfo = NULL;
 
-	logger.info("inputParameters.suggestedLatency: %.4f", inputParameters.suggestedLatency);
+			printf("inputParameters.suggestedLatency: %.4f", inputParameters.suggestedLatency);
+			logger.info("inputParameters.suggestedLatency: %.4f", inputParameters.suggestedLatency);
 
-	err = Pa_OpenStream(&input_stream,         // the input stream
-						&inputParameters,      // input params
-						NULL,                  // output params
-						sample_rate,           // sample rate
-						FRAMES_PER_BUFFER,     // frames per buffer
-						paClipOff,             // we won't output out of range samples so don't bother clipping them
-						paRecordCallback,      // PortAudio callback function
-						&data);                // data pointer
+			err = Pa_OpenStream(&input_stream,         // the input stream
+								&inputParameters,      // input params
+								NULL,                  // output params
+								sample_rate,           // sample rate
+								FRAMES_PER_BUFFER,     // frames per buffer
+								paClipOff,             // we won't output out of range samples so don't bother clipping them
+								paRecordCallback,      // PortAudio callback function
+								&data);                // data pointer
 
-	logger.info("defaultHighOutputLatency: %.4f", Pa_GetDeviceInfo(inputParameters.device)->defaultHighOutputLatency);
-
-	if(err != paNoError) {
-	    logger.error("Failed to open input stream: %s", Pa_GetErrorText(err));
-		exit(-1);
-	}
-
-	output_parameters.device = Pa_GetDefaultOutputDevice();
-	if(output_parameters.device == paNoDevice) {
-		logger.error("No default output device.");
-		exit(-1);
-	}
-	output_parameters.channelCount = NUM_CHANNELS;
-	output_parameters.sampleFormat =  paInt16;
-
-	if(output_delay < 0.0)
-		output_delay = Pa_GetDeviceInfo(output_parameters.device)->defaultHighOutputLatency;
-	output_parameters.suggestedLatency = output_delay;
-	output_parameters.hostApiSpecificStreamInfo = NULL;
-
-	logger.info("output_parameters.suggestedLatency: %.4f", output_parameters.suggestedLatency);
-
-	err = Pa_OpenStream(&output_stream,		// the output stream
-						NULL, 				// input params
-						&output_parameters,	// output params
-						sample_rate,		// sample rate
-						FRAMES_PER_BUFFER,	// frames per buffer
-						paClipOff,      	// we won't output out of range samples so don't bother clipping them
-						paOutputCallback,	// PortAudio callback function
-						&data);				// data pointer
-
-	logger.info("defaultHighOutputLatency: %.4f", Pa_GetDeviceInfo(output_parameters.device)->defaultHighOutputLatency);
-
-	if(err != paNoError) {
-		logger.error("Failed to open output stream: %s", Pa_GetErrorText(err));
-		exit(-1);
+			printf("defaultHighOutputLatency: %.4f", Pa_GetDeviceInfo(inputParameters.device)->defaultHighOutputLatency);
+			logger.info("defaultHighOutputLatency: %.4f", Pa_GetDeviceInfo(inputParameters.device)->defaultHighOutputLatency);
+		}
+		if(err != paNoError) {
+			printf("Failed to open input stream: %s", Pa_GetErrorText(err));
+			logger.error("Failed to open input stream: %s", Pa_GetErrorText(err));
+			//exit(-1);
+			invoice = false;
+		}
 	}
 
+	if(outvoice){
+		output_parameters.device = Pa_GetDefaultOutputDevice();
+		if(output_parameters.device == paNoDevice) {
+			printf("No default output device.");
+			logger.error("No default output device.");
+			outvoice = false;
+			//exit(-1);
+		}
+		if(outvoice){
+			output_parameters.channelCount = NUM_CHANNELS;
+			output_parameters.sampleFormat =  paInt16;
+
+			if(output_delay < 0.0)
+				output_delay = Pa_GetDeviceInfo(output_parameters.device)->defaultHighOutputLatency;
+			output_parameters.suggestedLatency = output_delay;
+			output_parameters.hostApiSpecificStreamInfo = NULL;
+
+			logger.info("output_parameters.suggestedLatency: %.4f", output_parameters.suggestedLatency);
+
+			err = Pa_OpenStream(&output_stream,		// the output stream
+								NULL, 				// input params
+								&output_parameters,	// output params
+								sample_rate,		// sample rate
+								FRAMES_PER_BUFFER,	// frames per buffer
+								paClipOff,      	// we won't output out of range samples so don't bother clipping them
+								paOutputCallback,	// PortAudio callback function
+								&data);				// data pointer
+
+			logger.info("defaultHighOutputLatency: %.4f", Pa_GetDeviceInfo(output_parameters.device)->defaultHighOutputLatency);
+
+			if(err != paNoError) {
+				logger.error("Failed to open output stream: %s", Pa_GetErrorText(err));
+				//exit(-1);
+				outvoice = false;
+			}
+		}
+	}
 	// start the streams
-	err = Pa_StartStream(input_stream);
-	if(err != paNoError) {
-		logger.error("Failed to start input stream: %s", Pa_GetErrorText(err));
-		exit(-1);
+	if(invoice){
+		err = Pa_StartStream(input_stream);
+		if(err != paNoError) {
+			printf("Failed to start input stream: %s", Pa_GetErrorText(err));
+			logger.error("Failed to start input stream: %s", Pa_GetErrorText(err));
+			//exit(-1);
+			invoice = false;
+		}
 	}
 
-	err = Pa_StartStream(output_stream);
-	if(err != paNoError) {
-		logger.error("Failed to start output stream: %s", Pa_GetErrorText(err));
-		exit(-1);
+	if(outvoice){
+		err = Pa_StartStream(output_stream);
+		if(err != paNoError) {
+			printf("Failed to start output stream: %s", Pa_GetErrorText(err));
+			logger.error("Failed to start output stream: %s", Pa_GetErrorText(err));
+			//exit(-1);
+			outvoice = false;
+		}
 	}
 
 	///////////////////////
@@ -418,76 +453,78 @@ int main(int argc, char *argv[]) {
 		}
 	});
 
-	std::thread input_consumer_thread([&]() {
-		// consumes the data that the input audio thread receives and sends it
-		// through mumble client
-		// this will continuously read from the input data circular buffer
+	if(invoice){
+		std::thread input_consumer_thread([&]() {
+			// consumes the data that the input audio thread receives and sends it
+			// through mumble client
+			// this will continuously read from the input data circular buffer
 
-		// Opus can encode frames of 2.5, 5, 10, 20, 40, or 60 ms
-		// the Opus RFC 6716 recommends using 20ms frame sizes
-		// so at 48k sample rate, 20ms is 960 samples
-		const int OPUS_FRAME_SIZE = (sample_rate / 1000.0)*20.0;
+			// Opus can encode frames of 2.5, 5, 10, 20, 40, or 60 ms
+			// the Opus RFC 6716 recommends using 20ms frame sizes
+			// so at 48k sample rate, 20ms is 960 samples
+			const int OPUS_FRAME_SIZE = (sample_rate / 1000.0)*20.0;
 
-		logger.info("OPUS_FRAME_SIZE: %d", OPUS_FRAME_SIZE);
+			logger.info("OPUS_FRAME_SIZE: %d", OPUS_FRAME_SIZE);
 
-		std::chrono::steady_clock::time_point start;
-		std::chrono::steady_clock::time_point now;
-		bool voice_hold_flag = false;
-		bool first_run_flag = true;
-		int16_t *out_buf = new int16_t[MAX_SAMPLES];
-		while(!sig_caught) {
-			if(!data.rec_buf->isEmpty() && data.rec_buf->getRemaining() >= OPUS_FRAME_SIZE) {
+			std::chrono::steady_clock::time_point start;
+			std::chrono::steady_clock::time_point now;
+			bool voice_hold_flag = false;
+			bool first_run_flag = true;
+			int16_t *out_buf = new int16_t[MAX_SAMPLES];
+			while(!sig_caught) {
+				if(!data.rec_buf->isEmpty() && data.rec_buf->getRemaining() >= OPUS_FRAME_SIZE) {
 
-				// perform VOX algorithm
-				// convert each sample to dB
-				// take average (RMS) of all samples
-				// if average >= threshold, transmit, else ignore
-				// dB = 20 * log_10(rms)
+					// perform VOX algorithm
+					// convert each sample to dB
+					// take average (RMS) of all samples
+					// if average >= threshold, transmit, else ignore
+					// dB = 20 * log_10(rms)
 
-				// also perform a "voice hold" for aprox voice_hold_interval
-				// if we have just transmitted
+					// also perform a "voice hold" for aprox voice_hold_interval
+					// if we have just transmitted
 
-				// do a bulk get and send it through mumble client
-				if(mum.getConnectionState() == mumlib::ConnectionState::CONNECTED) {
-					data.rec_buf->top(out_buf, 0, OPUS_FRAME_SIZE);
+					// do a bulk get and send it through mumble client
+					if(mum.getConnectionState() == mumlib::ConnectionState::CONNECTED) {
+						data.rec_buf->top(out_buf, 0, OPUS_FRAME_SIZE);
 
-					// compute RMS of sample window
-					double sum = 0;
-					for(int i = 0; i < OPUS_FRAME_SIZE; i++) {
-						const double sample = std::abs(out_buf[i]) / INT16_MAX;
-						sum += sample * sample;
-					}
-					const double rms = std::sqrt(sum / OPUS_FRAME_SIZE);
+						// compute RMS of sample window
+						double sum = 0;
+						for(int i = 0; i < OPUS_FRAME_SIZE; i++) {
+							const double sample = std::abs(out_buf[i]) / INT16_MAX;
+							sum += sample * sample;
+						}
+						const double rms = std::sqrt(sum / OPUS_FRAME_SIZE);
 
-					double db = vox_threshold;
-					if(rms > 0.0)
-						db = 20.0 * std::log10(rms);
+						double db = vox_threshold;
+						if(rms > 0.0)
+							db = 20.0 * std::log10(rms);
 
-					logger.info("Recorded voice dB: %.2f", db);
+						logger.info("Recorded voice dB: %.2f", db);
 
-					if(!first_run_flag) {
-						now = std::chrono::steady_clock::now();
-						auto duration = now - start;
-						if(duration < voice_hold_interval)
-							voice_hold_flag = true;
-						else
-							voice_hold_flag = false;
-					}
+						if(!first_run_flag) {
+							now = std::chrono::steady_clock::now();
+							auto duration = now - start;
+							if(duration < voice_hold_interval)
+								voice_hold_flag = true;
+							else
+								voice_hold_flag = false;
+						}
 
-					if(db >= vox_threshold || voice_hold_flag)	{ // only tx if vox threshold met
-						mum.sendAudioData(out_buf, OPUS_FRAME_SIZE);
-						if(!voice_hold_flag) {
-							start = std::chrono::steady_clock::now();
-							first_run_flag = false;
+						if(db >= vox_threshold || voice_hold_flag)	{ // only tx if vox threshold met
+							mum.sendAudioData(out_buf, OPUS_FRAME_SIZE);
+							if(!voice_hold_flag) {
+								start = std::chrono::steady_clock::now();
+								first_run_flag = false;
+							}
 						}
 					}
+				} else {
+					std::this_thread::sleep_for(std::chrono::milliseconds(20));
 				}
-			} else {
-				std::this_thread::sleep_for(std::chrono::milliseconds(20));
 			}
-		}
-		delete[] out_buf;
-	});
+			delete[] out_buf;
+		});
+	}
 
 	// init signal handler
 	struct sigaction action;
@@ -521,17 +558,22 @@ int main(int argc, char *argv[]) {
 	logger.info("Cleaning up PortAudio...");
 
 	// close streams
-	logger.info("Closing input stream");
-	err = Pa_CloseStream(input_stream);
-	if(err != paNoError) {
-		logger.error("Failed to close inputstream: %s", Pa_GetErrorText(err));
-		exit(-1);
+	if(invoice){
+		logger.info("Closing input stream");
+		err = Pa_CloseStream(input_stream);
+		if(err != paNoError) {
+			logger.error("Failed to close inputstream: %s", Pa_GetErrorText(err));
+			exit(-1);
+		}
 	}
-	logger.info("Closing output stream");
-	err = Pa_CloseStream(output_stream);
-	if(err != paNoError) {
-		logger.error("Failed to close output stream: %s", Pa_GetErrorText(err));
-		exit(-1);
+
+	if(outvoice){
+		logger.info("Closing output stream");
+		err = Pa_CloseStream(output_stream);
+		if(err != paNoError) {
+			logger.error("Failed to close output stream: %s", Pa_GetErrorText(err));
+			exit(-1);
+		}
 	}
 
 	// terminate PortAudio engine
