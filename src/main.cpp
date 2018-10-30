@@ -198,12 +198,10 @@ int main(int argc, char *argv[]) {
 	std::string username;
 	std::string password;
 	int next_option;
-	const char* const short_options = "hvs:u:p:d:r:x:i:";
+	const char* const short_options = "hvs:u:p:d:r:x:z:o:i";
 	const struct option long_options[] =
 	{
 		{ "help", no_argument, NULL, 'h' },
-		{ "outvoiceoff", required_argument, NULL, 'o' },
-		{ "invoiceoff", required_argument, NULL, 'i' },
 		{ "verbose", required_argument, NULL, 'v' },
 		{ "server", required_argument, NULL, 's' },
 		{ "username", required_argument, NULL, 'u' },
@@ -212,6 +210,8 @@ int main(int argc, char *argv[]) {
 		{ "sample-rate", required_argument, NULL, 'r'},
 		{ "vox-threshold", required_argument, NULL, 'x'},
 		{ "voice-hold", required_argument, NULL, 'z'},
+		{ "outvoiceoff", required_argument, NULL, 'o' },
+		{ "invoiceoff", required_argument, NULL, 'i' },
 		{ NULL, 0, NULL, 0 }
 	};
 	double output_delay = -1.0;
