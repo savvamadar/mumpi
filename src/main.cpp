@@ -452,9 +452,9 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	});
-
+	std::thread input_consumer_thread = NULL;
 	if(invoice){
-		std::thread input_consumer_thread([&]() {
+		input_consumer_thread([&]() {
 			// consumes the data that the input audio thread receives and sends it
 			// through mumble client
 			// this will continuously read from the input data circular buffer
@@ -548,7 +548,9 @@ int main(int argc, char *argv[]) {
 	// clean up mumble library
 	///////////////////////////
 	logger.info("Disconnecting...");
-	input_consumer_thread.join();
+	if(input_consumer_thread!=NULL){
+		input_consumer_thread.join();
+	}
 	mum.disconnect();
 	mumble_thread.join();
 
