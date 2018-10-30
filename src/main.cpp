@@ -443,6 +443,7 @@ int main(int argc, char *argv[]) {
 	conf.opusEncoderBitrate = sample_rate;
 	mumlib::Mumlib mum(mumble_callback, conf);
 	mumble_callback.mum = &mum;
+	mumble_callback.outputsound = outvoice;
 
 	std::thread mumble_thread([&]() {
 		while(!sig_caught) {
