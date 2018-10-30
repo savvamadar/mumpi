@@ -1,7 +1,5 @@
 #include "MumpiCallback.hpp"
 
-bool outputSound = true;
-
 MumpiCallback::MumpiCallback(std::shared_ptr<RingBuffer<int16_t>> out_buf) :
         _out_buf(out_buf) {
 }
@@ -40,9 +38,11 @@ void MumpiCallback::audio(int target,
                           int sequenceNumber,
                           int16_t *pcm_data,
                           uint32_t pcm_data_size) {
-    _logger.info("Received audio: pcm_data_size: %d", pcm_data_size);
-    if(pcm_data != NULL) {
-        _out_buf->push(pcm_data, 0, pcm_data_size);
+    if(outputsound){
+        _logger.info("Received audio: pcm_data_size: %d", pcm_data_size);
+        if(pcm_data != NULL) {
+            _out_buf->push(pcm_data, 0, pcm_data_size);
+        }
     }
 }
 

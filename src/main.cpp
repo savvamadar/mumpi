@@ -117,7 +117,7 @@ static int paOutputCallback(const void *inputBuffer,
 	// if we dont have enough samples in our ring buffer, we have to still supply 0s to the output_buffer
 	const size_t requested_samples = (framesPerBuffer * NUM_CHANNELS);
 	const size_t available_samples = pa_data->out_buf->getRemaining();
-	printf("test?");
+	//printf("test?");
 	logger.info("requested_samples: %d", requested_samples);
 	logger.info("available_samples: %d", available_samples);
 	if(requested_samples > available_samples) {

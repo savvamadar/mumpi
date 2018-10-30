@@ -32,6 +32,8 @@ public:
                              std::vector<uint32_t> tree_id,
                              std::string message) override;
 
+    bool outputsound = true;
+
     mumlib::Mumlib *mum;
 private:
     std::shared_ptr<RingBuffer<int16_t>> _out_buf;
