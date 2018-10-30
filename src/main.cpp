@@ -130,6 +130,10 @@ static int paOutputCallback(const void *inputBuffer,
 	return result;
 }
 
+void foo(){
+	// yeet
+}
+
 /**
  * Gets the next power of 2 for the passed argument
  *
@@ -452,9 +456,9 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	});
-	std::thread input_consumer_thread = NULL;
+	std::thread input_consumer_thread(foo);
 	if(invoice){
-		input_consumer_thread([&]() {
+		std::thread input_consumer_thread([&]() {
 			// consumes the data that the input audio thread receives and sends it
 			// through mumble client
 			// this will continuously read from the input data circular buffer
@@ -548,9 +552,7 @@ int main(int argc, char *argv[]) {
 	// clean up mumble library
 	///////////////////////////
 	logger.info("Disconnecting...");
-	if(input_consumer_thread!=NULL){
-		input_consumer_thread.join();
-	}
+	input_consumer_thread.join();
 	mum.disconnect();
 	mumble_thread.join();
 
